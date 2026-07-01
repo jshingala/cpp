@@ -14,7 +14,6 @@ void pattern(int n) {
         for(int k=0; k<=i;k++) cout<<"*";
         int space= 2*(n-i-1); //for first iteration;
         for(int j=0;j<space;j++)cout<<" "; //for spaces;
-        space -=2;
         for(int l= 0;l<=i;l++)cout<< "*";
         
         cout<<endl;
