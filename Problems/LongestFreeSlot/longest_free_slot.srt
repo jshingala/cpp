@@ -1,0 +1,159 @@
+1
+00:00:00,000 --> 00:00:06,974
+In this video, we walk through a C++ solution to the longest free slot problem.
+
+2
+00:00:07,424 --> 00:00:14,652
+For every employee and every day, we find the longest stretch of free time inside business hours.
+
+3
+00:00:15,102 --> 00:00:22,126
+The first line gives the business hours start, the business hours end, and the number of meeting records.
+
+4
+00:00:22,576 --> 00:00:28,933
+Each record has an employee ID, a meeting name, a join time, and a leave time.
+
+5
+00:00:29,383 --> 00:00:39,821
+For each employee and date, we print the start, the end, and the length in minutes of the longest free gap. Ties go to the earliest gap.
+
+6
+00:00:40,271 --> 00:00:42,579
+The plan has four steps.
+
+7
+00:00:43,029 --> 00:00:54,641
+Parse each record. Split any meeting that crosses midnight. Clip each piece to business hours. Then sort and sweep each day to find the biggest gap.
+
+8
+00:00:55,091 --> 00:01:01,357
+Everything is stored in a map from employee and date to that day's list of busy intervals.
+
+9
+00:01:01,807 --> 00:01:11,223
+toMinutes turns an HH:MM string into minutes since midnight, and hhmm turns minutes back into HH:MM.
+
+10
+00:01:11,673 --> 00:01:21,850
+nextDate adds one day to a date string. It rolls over month ends and year ends, and gives February an extra day in leap years.
+
+11
+00:01:22,300 --> 00:01:29,666
+A leap year is divisible by 4 but not by 100, unless it is also divisible by 400.
+
+12
+00:01:30,116 --> 00:01:39,261
+Dates are YYYY-MM-DD, so plain string comparison orders them correctly. The loop later relies on that.
+
+13
+00:01:39,711 --> 00:01:47,390
+In solve, we read the business hours and the record count, then call getline to finish that first line.
+
+14
+00:01:47,840 --> 00:01:51,106
+Both business times are converted to minutes.
+
+15
+00:01:51,556 --> 00:02:01,577
+The map key is a pair: employee ID and date. The value is the list of busy intervals for that day, already clipped to business hours.
+
+16
+00:02:02,027 --> 00:02:08,389
+Because it is an ordered map, the output will come out sorted by employee, then by date.
+
+17
+00:02:08,839 --> 00:02:15,446
+Blank lines are skipped without counting them as records. Each record is split on commas.
+
+18
+00:02:15,896 --> 00:02:23,255
+The first ten characters of each timestamp are the date, and characters eleven to fifteen are the time.
+
+19
+00:02:23,705 --> 00:02:35,669
+Now the key trick. A meeting can cross midnight, like employee 102's overnight deploy, from 10 PM on March 11 to 10 AM on March 12.
+
+20
+00:02:36,119 --> 00:02:50,624
+We walk the dates from the join date to the leave date. On the first date the piece starts at the join time. On the last date it ends at the leave time. Any date in between is the full 24 hours.
+
+21
+00:02:51,074 --> 00:02:58,213
+If a piece has zero length, for example a meeting that ends exactly at midnight, it is skipped.
+
+22
+00:02:58,663 --> 00:03:09,089
+Each piece is then clipped to business hours. On March 11, the 10 PM to midnight piece is outside nine to five, so nothing is added.
+
+23
+00:03:09,539 --> 00:03:18,979
+On March 12, only nine to ten stays busy, which leaves a free slot from ten to five: 420 minutes.
+
+24
+00:03:19,428 --> 00:03:29,764
+Line 31 still creates a map entry for the join date, so March 11 appears in the output as a fully free day of 480 minutes.
+
+25
+00:03:30,214 --> 00:03:37,835
+Now the sweep. Here are employee 101's busy intervals on March 11, sorted by start time.
+
+26
+00:03:38,285 --> 00:03:47,251
+The cursor marks the end of the busy time merged so far. It starts at 9 AM, and the best gap starts at zero.
+
+27
+00:03:47,701 --> 00:03:56,890
+The first meeting starts at 9:30, after the cursor. That leaves a 30 minute gap, which becomes the best so far.
+
+28
+00:03:57,340 --> 00:04:01,056
+The cursor moves to the meeting's end, 10:30.
+
+29
+00:04:01,506 --> 00:04:08,519
+The next meeting starts at 10, before the cursor, so it overlaps. There is no gap.
+
+30
+00:04:08,969 --> 00:04:17,836
+We simply extend the cursor to 11. This is how overlapping and touching meetings merge, without a separate merge step.
+
+31
+00:04:18,286 --> 00:04:29,306
+The third meeting starts at 1 PM. The gap from 11 to 1 is 120 minutes, a new best. The cursor moves to 2 PM.
+
+32
+00:04:29,756 --> 00:04:39,484
+After the loop, we check the gap from the cursor to the end of business hours. Two to five is 180 minutes, the new best.
+
+33
+00:04:39,934 --> 00:04:46,538
+Because the best is only replaced by a strictly longer gap, ties keep the earliest one.
+
+34
+00:04:46,988 --> 00:04:59,717
+A few edge cases. Employee 103 is in an offsite for the whole business day, so no gap is ever found. The output is a zero length slot starting at 9 AM.
+
+35
+00:05:00,167 --> 00:05:05,811
+Back to back meetings merge because the next start is not greater than the cursor.
+
+36
+00:05:06,261 --> 00:05:17,324
+Meetings entirely outside business hours are clipped away, but their date still shows up. Month ends, year ends, and leap years are handled by next Date.
+
+37
+00:05:17,774 --> 00:05:21,296
+Here is the program's output for the sample input.
+
+38
+00:05:21,746 --> 00:05:36,066
+Employee 101 is free from 2 to 5. Employee 102 is free all of March 11, and from 10 to 5 on March 12. Employee 103 has no free time.
+
+39
+00:05:36,516 --> 00:05:45,947
+Time complexity is O of N log N for parsing and sorting, plus the number of days that meetings span. Space is linear.
+
+40
+00:05:46,397 --> 00:05:57,879
+To recap: convert times to minutes, split at midnight, clip to business hours, then sort and sweep with a single cursor. Thanks for watching.
